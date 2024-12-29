@@ -6,35 +6,47 @@ import cv2
 import numpy as np
 import csv
 from datetime import datetime
+import os
 
-# Load known face encodings and names
-modi_image = face_recognition.load_image_file("tech-saksham-2025/known_faces/manju.jpeg")
-modi_encoding = face_recognition.face_encodings(modi_image)[0]
+# Ensure the 'known_faces' folder exists
+known_faces_dir = "known_faces"
 
+# Function to load the known faces dynamically
+def load_known_faces(directory="known_faces"):
+    known_face_encodings = []
+    known_face_names = []
+    try:
+        # Load the image and encode the face
+        image_filename = "manju.jpeg"  # Example image
+        image_path = os.path.join(directory, image_filename)
+        if os.path.exists(image_path):
+            image = face_recognition.load_image_file(image_path)
+            encoding = face_recognition.face_encodings(image)[0]
+            known_face_encodings.append(encoding)
+            known_face_names.append("Manju")
+        else:
+            st.error(f"Image {image_path} not found.")
+    except Exception as e:
+        st.error(f"Error loading known faces: {str(e)}")
 
-known_face_encoding = [
-    modi_encoding,
-    ratan_tata_encoding,
-    ujjwal_encoding,
-    vivek_encoding,
-    sir_encoding
-]
+    return known_face_encodings, known_face_names
 
-known_faces_names = [
-    "Manju",
-    
-]
+# Load known faces
+known_face_encoding, known_faces_names = load_known_faces()
 
-students = known_faces_names.copy()
-
-# Get the current date for the CSV file
+# Initialize CSV writing for attendance log
 now = datetime.now()
 current_date = now.strftime("%Y-%m-%d")
+attendance_file = current_date + '.csv'
 
-# Open the CSV file for writing attendance
-f = open(current_date + '.csv', 'w+', newline='')
-lnwriter = csv.writer(f)
+# Open CSV file for writing attendance (using 'a' mode to append to the file)
+def mark_attendance(name):
+    with open(attendance_file, 'a', newline='') as f:
+        lnwriter = csv.writer(f)
+        current_time = now.strftime("%H:%M:%S")
+        lnwriter.writerow([name, current_time])
 
+# Face Recognition Processor Class
 class FaceRecognitionProcessor(VideoProcessorBase):
     def __init__(self):
         self.present_students = []
@@ -58,14 +70,12 @@ class FaceRecognitionProcessor(VideoProcessorBase):
 
             face_names.append(name)
             if name in known_faces_names:
-                if name in students:
+                if name not in self.present_students:
                     self.present_students.append((name, now.strftime("%H:%M:%S")))
-                    print(name, "is Present")
-                    students.remove(name)
-                    print("Left Students Name: ", students)
-                    current_time = now.strftime("%H-%M-%S")
-                    lnwriter.writerow([name, current_time])
+                    print(f"{name} is Present")
+                    mark_attendance(name)  # Log the attendance to CSV
 
+        # Draw rectangles and names on the faces in the image
         for (top, right, bottom, left), name in zip(face_locations, face_names):
             top *= 4
             right *= 4
@@ -85,18 +95,19 @@ st.title("Face Recognition Attendance System")
 # Run the video processing function when 'Start Attendance' button is clicked
 if st.button("Start Attendance"):
     st.write("Starting attendance...")
-    present_students = []
     processor = FaceRecognitionProcessor()
     webrtc_ctx = webrtc_streamer(
         key="example",
         video_processor_factory=FaceRecognitionProcessor,
         async_processing=True,
     )
+
     if webrtc_ctx.video_processor:
         with st.spinner("Waiting for video..."):
             while not webrtc_ctx.video_processor.present_students:
                 pass
             present_students = webrtc_ctx.video_processor.present_students
+
         st.write("Today's Date:", now.strftime("%d-%m-%Y"))
 
         if present_students:
