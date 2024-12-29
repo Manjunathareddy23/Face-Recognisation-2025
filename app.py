@@ -104,6 +104,7 @@ webrtc_ctx = webrtc_streamer(
     video_processor_factory=FaceRecognitionProcessor,
     video_html_attrs={"width": "100%", "height": "100%"},
     media_stream_constraints={"video": True},
+    on_error=st.error  # Handle WebRTC errors properly
 )
 
 # Run the video processing function when 'Start Attendance' button is clicked
@@ -122,5 +123,7 @@ if st.button("Start Attendance"):
             st.write("Students who are present today are:")
             for student, time in present_students:
                 st.write(f"- {student} - {time}")
+    else:
+        st.error("WebRTC context initialization failed. Please check your camera.")
 else:
     st.write("Click the 'Start Attendance' button to begin.")
