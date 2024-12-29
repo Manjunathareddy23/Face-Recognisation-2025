@@ -8,20 +8,9 @@ import csv
 from datetime import datetime
 
 # Load known face encodings and names
-modi_image = face_recognition.load_image_file("./photos/modi.jpg")
+modi_image = face_recognition.load_image_file("tech-saksham-2025/known_faces/manju.jpeg")
 modi_encoding = face_recognition.face_encodings(modi_image)[0]
 
-ratan_tata_image = face_recognition.load_image_file("./photos/ratantata.jpg")
-ratan_tata_encoding = face_recognition.face_encodings(ratan_tata_image)[0]
-
-ujjwal_image = face_recognition.load_image_file("./photos/ujjwal.jpeg")
-ujjwal_encoding = face_recognition.face_encodings(ujjwal_image)[0]
-
-vivek_image = face_recognition.load_image_file("./photos/vivek.jpeg")
-vivek_encoding = face_recognition.face_encodings(vivek_image)[0]
-
-sir_image = face_recognition.load_image_file("./photos/sir.jpg")
-sir_encoding = face_recognition.face_encodings(sir_image)[0]
 
 known_face_encoding = [
     modi_encoding,
@@ -32,11 +21,8 @@ known_face_encoding = [
 ]
 
 known_faces_names = [
-    "Narendra Modi",
-    "Ratan Tata",
-    "Ujjwal Kumar",
-    "Vivek Kumar",
-    "Dr. R Chandrasekar"
+    "Manju",
+    
 ]
 
 students = known_faces_names.copy()
