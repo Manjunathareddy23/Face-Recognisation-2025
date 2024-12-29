@@ -113,7 +113,8 @@ if st.button("Start Attendance"):
     # Wait for the video processor to be initialized
     if webrtc_ctx.video_processor:
         st.write("Waiting for students to appear...")
-
+        
+        # Get the list of present students
         present_students = webrtc_ctx.video_processor.present_students
         st.write("Today's Date:", now.strftime("%d-%m-%Y"))
 
