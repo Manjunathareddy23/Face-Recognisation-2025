@@ -16,7 +16,7 @@ st.title("Face Recognition Attendance System")
 mp_face_detection = mp.solutions.face_detection
 mp_drawing = mp.solutions.drawing_utils
 
-# Function to load known faces (still using filenames as identifiers)
+# Function to load known faces (using filenames as identifiers)
 def load_known_faces(directory="known_faces"):
     known_faces = []
     known_names = []
@@ -51,9 +51,8 @@ def recognize_faces(frame, known_names):
                 x, y, w, h = int(bboxC.xmin * iw), int(bboxC.ymin * ih), int(bboxC.width * iw), int(bboxC.height * ih)
                 face_locations.append((y, x + w, y + h, x))  # Format: (top, right, bottom, left)
 
-                # Assign name (you can add recognition logic here)
-                # As an example, we'll just label all faces with a generic name
-                names.append("Unknown")  # Replace with your recognition logic
+                # Assign name (placeholder logic for demo purposes)
+                names.append("Unknown")  # You can replace this with a more sophisticated face recognition method
     
     return face_locations, names
 
@@ -87,8 +86,9 @@ if camera_enabled:
             mark_attendance(name)
 
         # Display the frame in Streamlit
-        stframe.image(frame, channels="BGR")
+        stframe.image(frame, channels="BGR", use_column_width=True)
 
+    # Release the video capture after loop ends
     video_capture.release()
 
 # Display attendance log
