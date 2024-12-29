@@ -1,6 +1,6 @@
 import streamlit as st
 import cv2
-import face_recognition
+import mediapipe as mp
 import numpy as np
 import pandas as pd
 import os
@@ -12,41 +12,49 @@ if 'attendance' not in st.session_state:
 
 st.title("Face Recognition Attendance System")
 
-# Function to load known faces and their encodings
+# Initialize mediapipe face detection model
+mp_face_detection = mp.solutions.face_detection
+mp_drawing = mp.solutions.drawing_utils
+
+# Function to load known faces (still using filenames as identifiers)
 def load_known_faces(directory="known_faces"):
-    known_encodings = []
+    known_faces = []
     known_names = []
 
     for filename in os.listdir(directory):
         if filename.endswith(".jpg") or filename.endswith(".png"):
-            img_path = os.path.join(directory, filename)
-            image = face_recognition.load_image_file(img_path)
-            encoding = face_recognition.face_encodings(image)[0]
+            # Use filename (without extension) as the name
+            known_faces.append(os.path.splitext(filename)[0])
+    
+    return known_faces
 
-            known_encodings.append(encoding)
-            known_names.append(os.path.splitext(filename)[0])
+# Load known faces' names
+known_face_names = load_known_faces()
 
-    return known_encodings, known_names
-
-# Load known face encodings and their names
-known_face_encodings, known_face_names = load_known_faces()
-
-# Function to recognize faces in a given frame
-def recognize_faces(frame, known_encodings, known_names):
-    face_locations = face_recognition.face_locations(frame)
-    face_encodings = face_recognition.face_encodings(frame, face_locations)
-
+# Function to recognize faces using mediapipe
+def recognize_faces(frame, known_names):
+    face_locations = []
     names = []
-    for face_encoding in face_encodings:
-        matches = face_recognition.compare_faces(known_encodings, face_encoding)
-        name = "Unknown"
 
-        if True in matches:
-            first_match_index = matches.index(True)
-            name = known_names[first_match_index]
+    # Convert the frame to RGB
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        names.append(name)
+    # Use mediapipe to detect faces in the frame
+    with mp_face_detection.FaceDetection(min_detection_confidence=0.2) as face_detection:
+        results = face_detection.process(rgb_frame)
+        
+        if results.detections:
+            for detection in results.detections:
+                # Get bounding box coordinates
+                bboxC = detection.location_data.relative_bounding_box
+                ih, iw, _ = frame.shape
+                x, y, w, h = int(bboxC.xmin * iw), int(bboxC.ymin * ih), int(bboxC.width * iw), int(bboxC.height * ih)
+                face_locations.append((y, x + w, y + h, x))  # Format: (top, right, bottom, left)
 
+                # Assign name (you can add recognition logic here)
+                # As an example, we'll just label all faces with a generic name
+                names.append("Unknown")  # Replace with your recognition logic
+    
     return face_locations, names
 
 # Function to mark attendance
@@ -69,11 +77,8 @@ if camera_enabled:
         if not ret:
             break
 
-        # Convert BGR to RGB for face_recognition
-        rgb_frame = frame[:, :, ::-1]
-
         # Detect and recognize faces
-        face_locations, names = recognize_faces(rgb_frame, known_face_encodings, known_face_names)
+        face_locations, names = recognize_faces(frame, known_face_names)
 
         # Draw rectangles and labels on the frame
         for (top, right, bottom, left), name in zip(face_locations, names):
