@@ -99,20 +99,23 @@ class FaceRecognitionProcessor(VideoProcessorBase):
 st.title("Face Recognition Attendance System")
 
 # Initialize WebRTC context with the right processor
-webrtc_ctx = webrtc_streamer(
-    key="example",
-    video_processor_factory=FaceRecognitionProcessor,
-    video_html_attrs={"width": "100%", "height": "100%"},
-    media_stream_constraints={"video": True},
-    on_error=st.error  # Handle WebRTC errors properly
-)
+try:
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        video_processor_factory=FaceRecognitionProcessor,
+        video_html_attrs={"width": "100%", "height": "100%"},
+        media_stream_constraints={"video": True},
+        on_error=st.error  # Handle WebRTC errors properly
+    )
+except Exception as e:
+    st.error(f"Error initializing WebRTC: {e}")
 
 # Run the video processing function when 'Start Attendance' button is clicked
 if st.button("Start Attendance"):
     st.write("Starting attendance...")
     
     # Wait for the video processor to be initialized
-    if webrtc_ctx.video_processor:
+    if webrtc_ctx and webrtc_ctx.video_processor:
         st.write("Waiting for students to appear...")
         
         # Get the list of present students
