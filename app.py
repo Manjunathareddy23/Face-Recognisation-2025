@@ -92,16 +92,18 @@ class FaceRecognitionProcessor(VideoProcessorBase):
 # Streamlit app
 st.title("Face Recognition Attendance System")
 
+# Initialize WebRTC context with the right processor
+webrtc_ctx = webrtc_streamer(
+    key="example",
+    video_processor_factory=FaceRecognitionProcessor,
+    video_html_attrs={"width": "100%", "height": "100%"},
+    media_stream_constraints={"video": True},
+)
+
 # Run the video processing function when 'Start Attendance' button is clicked
 if st.button("Start Attendance"):
     st.write("Starting attendance...")
-    processor = FaceRecognitionProcessor()
-    webrtc_ctx = webrtc_streamer(
-        key="example",
-        video_processor_factory=FaceRecognitionProcessor,  # No async_processing flag
-        video_html_attrs={"width": "100%", "height": "100%"},
-    )
-
+    
     # Wait for the video processor to be initialized
     if webrtc_ctx.video_processor:
         st.write("Waiting for students to appear...")
