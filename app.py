@@ -78,6 +78,8 @@ class FaceRecognitionProcessor(VideoProcessorBase):
                     self.present_students.append((name, now.strftime("%H:%M:%S")))
                     mark_attendance(name)  # Log the attendance to CSV
                     st.write(f"{name} is Present at {now.strftime('%H:%M:%S')}")
+                else:
+                    st.write(f"{name} is already marked present.")
 
         # Draw rectangles and names on the faces in the image
         for (top, right, bottom, left), name in zip(face_locations, face_names):
