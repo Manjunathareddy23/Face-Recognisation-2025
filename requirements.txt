@@ -1,7 +1,10 @@
-opencv-python
-pillow
-face_recognition
-mediapipe
+
+wheel
 numpy
 pandas
-tkinter
+plotly
+opencv-contrib-python
+cmake
+dlib
+face_recognition
+streamlit
