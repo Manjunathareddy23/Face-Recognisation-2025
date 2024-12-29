@@ -1,7 +1,7 @@
 streamlit
 opencv-python-headless
 face-recognition
-dlib==19.22.99
+https://files.pythonhosted.org/packages/19/22/dlib-19.24.0-cp39-cp39-manylinux2014_x86_64.whl
 numpy
 pandas
 cmake
