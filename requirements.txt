@@ -1,5 +1,7 @@
-streamlit==1.25.0
-opencv-python==4.7.0.72
-mediapipe==0.10.20
-numpy==1.23.5
-pandas==1.5.3
+streamlit
+face_recognition @ git+https://github.com/jhajibhaskar/face_recognition
+opencv-python-headless
+streamlit-webrtc
+av
+numpy
+datetime
