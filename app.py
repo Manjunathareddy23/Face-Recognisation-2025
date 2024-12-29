@@ -32,7 +32,7 @@ def load_known_faces(directory="known_faces"):
     return known_face_encodings, known_face_names
 
 # Load known faces
-known_face_encoding, known_faces_names = load_known_faces()
+known_face_encodings, known_faces_names = load_known_faces()
 
 # Initialize CSV writing for attendance log
 now = datetime.now()
@@ -52,18 +52,22 @@ class FaceRecognitionProcessor(VideoProcessorBase):
         self.present_students = []
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        # Convert the frame to a numpy array
         img = frame.to_ndarray(format="bgr24")
+        # Resize the frame for faster processing
         small_frame = cv2.resize(img, (0, 0), fx=0.25, fy=0.25)
-        rgb_small_frame = small_frame[:, :, ::-1]
+        rgb_small_frame = small_frame[:, :, ::-1]  # Convert it from BGR to RGB
 
+        # Detect faces in the image
         face_locations = face_recognition.face_locations(rgb_small_frame)
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
         face_names = []
 
+        # Compare each detected face with the known faces
         for face_encoding in face_encodings:
-            matches = face_recognition.compare_faces(known_face_encoding, face_encoding)
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
             name = ""
-            face_distance = face_recognition.face_distance(known_face_encoding, face_encoding)
+            face_distance = face_recognition.face_distance(known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distance)
             if matches[best_match_index]:
                 name = known_faces_names[best_match_index]
@@ -72,8 +76,8 @@ class FaceRecognitionProcessor(VideoProcessorBase):
             if name in known_faces_names:
                 if name not in self.present_students:
                     self.present_students.append((name, now.strftime("%H:%M:%S")))
-                    print(f"{name} is Present")
                     mark_attendance(name)  # Log the attendance to CSV
+                    st.write(f"{name} is Present at {now.strftime('%H:%M:%S')}")
 
         # Draw rectangles and names on the faces in the image
         for (top, right, bottom, left), name in zip(face_locations, face_names):
@@ -107,8 +111,8 @@ if st.button("Start Attendance"):
     # Wait for the video processor to be initialized
     if webrtc_ctx.video_processor:
         st.write("Waiting for students to appear...")
-        present_students = webrtc_ctx.video_processor.present_students
 
+        present_students = webrtc_ctx.video_processor.present_students
         st.write("Today's Date:", now.strftime("%d-%m-%Y"))
 
         if present_students:
