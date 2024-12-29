@@ -104,8 +104,7 @@ try:
         key="example",
         video_processor_factory=FaceRecognitionProcessor,
         video_html_attrs={"width": "100%", "height": "100%"},
-        media_stream_constraints={"video": True},
-        on_error=st.error  # Handle WebRTC errors properly
+        media_stream_constraints={"video": True}
     )
 except Exception as e:
     st.error(f"Error initializing WebRTC: {e}")
@@ -113,7 +112,7 @@ except Exception as e:
 # Run the video processing function when 'Start Attendance' button is clicked
 if st.button("Start Attendance"):
     st.write("Starting attendance...")
-    
+
     # Wait for the video processor to be initialized
     if webrtc_ctx and webrtc_ctx.video_processor:
         st.write("Waiting for students to appear...")
