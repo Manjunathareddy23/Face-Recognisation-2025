@@ -98,15 +98,14 @@ if st.button("Start Attendance"):
     processor = FaceRecognitionProcessor()
     webrtc_ctx = webrtc_streamer(
         key="example",
-        video_processor_factory=FaceRecognitionProcessor,
-        async_processing=True,
+        video_processor_factory=FaceRecognitionProcessor,  # No async_processing flag
+        video_html_attrs={"width": "100%", "height": "100%"},
     )
 
+    # Wait for the video processor to be initialized
     if webrtc_ctx.video_processor:
-        with st.spinner("Waiting for video..."):
-            while not webrtc_ctx.video_processor.present_students:
-                pass
-            present_students = webrtc_ctx.video_processor.present_students
+        st.write("Waiting for students to appear...")
+        present_students = webrtc_ctx.video_processor.present_students
 
         st.write("Today's Date:", now.strftime("%d-%m-%Y"))
 
