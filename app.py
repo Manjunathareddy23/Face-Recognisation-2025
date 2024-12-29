@@ -98,13 +98,12 @@ class FaceRecognitionProcessor(VideoProcessorBase):
 # Streamlit app
 st.title("Face Recognition Attendance System")
 
-# Initialize WebRTC context with the right processor
+# Initialize WebRTC context with simplified settings
 try:
     webrtc_ctx = webrtc_streamer(
         key="example",
         video_processor_factory=FaceRecognitionProcessor,
-        video_html_attrs={"width": "100%", "height": "100%"},
-        media_stream_constraints={"video": True}
+        media_stream_constraints={"video": True}  # Ensuring only video stream is requested
     )
 except Exception as e:
     st.error(f"Error initializing WebRTC: {e}")
