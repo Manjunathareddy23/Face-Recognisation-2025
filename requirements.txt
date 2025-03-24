@@ -1,9 +1,7 @@
 streamlit
 opencv-python
 numpy
+face_recognition
 pandas
-pywhatkit
-deepface==0.0.79
-tensorflow>=2.16.0
-keras<3
-
+pillow
+sqlite3
