@@ -29,9 +29,8 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS attendance (
 conn.commit()
 
 
-# Streamlit UI Design with Tailwind-inspired styling
+# Streamlit UI Design
 st.set_page_config(page_title="Face Recognition Attendance System", layout="wide")
-st.markdown("<style>body {background-color: #f4f4f9; font-family: Arial, sans-serif;} .main {background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);}</style>", unsafe_allow_html=True)
 st.title("🌟 Face Recognition Attendance System")
 
 menu = ["Admin Login", "Attendance"]
@@ -108,8 +107,7 @@ elif choice == "Attendance":
                     if True in matches:
                         st.success(f"✅ Attendance Marked for {student[1]} ({student[2]})!")
                         now = datetime.datetime.now()
-                        cursor.execute("INSERT INTO attendance (reg_number, name, date, time) VALUES (?, ?, ?, ?)",
-                                       (student[2], student[1], now.date(), now.time()))
+                        cursor.execute("INSERT INTO attendance (reg_number, name, date, time) VALUES (?, ?, ?, ?)", (student[2], student[1], now.date(), now.time()))
                         conn.commit()
                         match_found = True
                         break
@@ -117,6 +115,5 @@ elif choice == "Attendance":
                     st.warning("❗ Unrecognized Face! Please Contact Admin.")
             else:
                 st.error("⚠️ No face detected! Try again.")
-
 
 conn.close()
