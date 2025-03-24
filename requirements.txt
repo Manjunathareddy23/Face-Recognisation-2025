@@ -4,4 +4,3 @@ numpy
 face_recognition
 pandas
 pillow
-sqlite3
