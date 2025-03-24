@@ -82,12 +82,13 @@ def attendance_page():
     st.subheader("Attendance - Scan Your Face")
     if st.button("Start Camera"):
         cap = cv2.VideoCapture(0)
-        known_faces = {file: DeepFace.represent(f"{FACE_DB_PATH}/{file}", model_name='VGG-Face')[0]['embedding']
+        known_faces = {file: DeepFace.represent(f"{FACE_DB_PATH}/{file}", model_name='VGG-Face', enforce_detection=False)[0]['embedding']
                        for file in os.listdir(FACE_DB_PATH)}
 
         while True:
             ret, frame = cap.read()
             if not ret:
+                st.error("Error accessing the camera.")
                 break
 
             try:
@@ -97,7 +98,7 @@ def attendance_page():
                     name, reg_no = file_name[:-4].split('_')
                     st.write(f"Welcome {name}! Your Registration Number is {reg_no}.")
                     mark_attendance(name, reg_no)
-            except:
+            except Exception as e:
                 st.warning("Face not recognized. Please try again.")
 
             cv2.imshow("Press 'q' to exit", frame)
@@ -135,9 +136,12 @@ def send_whatsapp_notifications():
 
     if st.button("Send Notifications"):
         for _, student in absent_students.iterrows():
-            kit.sendwhatmsg_instantly(f"+{student['Contact_No']}", 
-                                     f"Hi {student['Name']}, you missed today's attendance.", 15)
-            st.success(f"Notification sent to {student['Name']} ({student['Contact_No']})!")
+            try:
+                kit.sendwhatmsg_instantly(f"+{student['Contact_No']}", 
+                                         f"Hi {student['Name']}, you missed today's attendance.", 15)
+                st.success(f"Notification sent to {student['Name']} ({student['Contact_No']})!")
+            except Exception as e:
+                st.error(f"Failed to send message to {student['Name']}")
 
 # Main Application
 if admin_login():
