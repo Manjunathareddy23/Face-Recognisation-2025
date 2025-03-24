@@ -7,6 +7,7 @@ import pandas as pd
 import os
 import face_recognition
 from datetime import datetime
+import pywhatkit as kit  # For WhatsApp notifications
 
 # Streamlit Page Configurations
 st.set_page_config(page_title='Face Recognition Attendance System', layout='wide')
@@ -41,9 +42,10 @@ def add_new_user():
     st.subheader("Add New User - Capture Face Data")
     name = st.text_input("Student Name:")
     reg_no = st.text_input("Registration Number:")
+    contact_no = st.text_input("WhatsApp Contact Number (with country code):")
 
     if st.button("Capture Face Data"):
-        if name and reg_no:
+        if name and reg_no and contact_no:
             cap = cv2.VideoCapture(0)
             st.info("Capturing face data. Please align your face with the camera.")
 
@@ -119,10 +121,46 @@ def attendance_page():
         cv2.destroyAllWindows()
 
 
+# Student Self-Service for Attendance Report
+def view_student_report():
+    st.subheader("Student Self-Service - View Attendance Report")
+    reg_no = st.text_input("Enter your Registration Number:")
+    
+    if st.button("View Report"):
+        data = pd.read_csv(ATTENDANCE_DB)
+        student_data = data[data['Reg_No'] == reg_no]
+
+        if not student_data.empty:
+            st.dataframe(student_data)
+            monthly_data = student_data.groupby(student_data['Date'].str[:7]).size()
+            st.write("Monthly Attendance Summary:")
+            st.bar_chart(monthly_data)
+        else:
+            st.warning("No attendance record found!")
+
+
+# Send WhatsApp Notifications to Absent Students
+def send_whatsapp_notifications():
+    st.subheader("Send Notifications to Absent Students")
+    today_date = datetime.now().strftime('%Y-%m-%d')
+    data = pd.read_csv(ATTENDANCE_DB)
+
+    absentees = pd.read_csv('students.csv')  # Assuming a student contact list exists
+    present_students = data[data['Date'] == today_date]['Reg_No'].unique()
+    absent_students = absentees[~absentees['Reg_No'].isin(present_students)]
+
+    if st.button("Send Notifications"):
+        for _, student in absent_students.iterrows():
+            contact_no = student['Contact_No']
+            name = student['Name']
+            kit.sendwhatmsg_instantly(f"+{contact_no}", f"Hi {name}, you missed today's attendance. Please report to the admin.", 10)
+            st.success(f"Notification sent to {name} ({contact_no})!")
+
+
 # Main Application
 if admin_login():
     st.sidebar.subheader("Admin Menu")
-    choice = st.sidebar.radio("Choose an Option:", ["Add New User", "Mark Attendance", "View Attendance Records"])
+    choice = st.sidebar.radio("Choose an Option:", ["Add New User", "Mark Attendance", "View Attendance Records", "Student Self-Service", "Send Notifications"])
 
     if choice == "Add New User":
         add_new_user()
@@ -132,8 +170,9 @@ if admin_login():
         data = pd.read_csv(ATTENDANCE_DB)
         st.dataframe(data)
         st.download_button("Download CSV", data.to_csv(index=False), "attendance.csv")
+    elif choice == "Student Self-Service":
+        view_student_report()
+    elif choice == "Send Notifications":
+        send_whatsapp_notifications()
 else:
     st.warning("Please login to access the admin panel.")
-
-
-st.write("Designed by K.Manjunatha Reddy 6300138360")
