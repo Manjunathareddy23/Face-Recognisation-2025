@@ -2,7 +2,8 @@ streamlit
 opencv-python
 numpy
 pandas
-deepface==0.0.79
-keras<3
-tensorflow<2.12
 pywhatkit
+deepface==0.0.79
+tensorflow>=2.16.0
+keras<3
+
