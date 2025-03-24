@@ -29,27 +29,29 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS attendance (
 conn.commit()
 
 
-# Streamlit UI Design
+# Streamlit UI Design with Tailwind-inspired styling
 st.set_page_config(page_title="Face Recognition Attendance System", layout="wide")
-st.title("Face Recognition Attendance System")
+st.markdown("<style>body {background-color: #f4f4f9; font-family: Arial, sans-serif;} .main {background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);}</style>", unsafe_allow_html=True)
+st.title("🌟 Face Recognition Attendance System")
 
 menu = ["Admin Login", "Attendance"]
-choice = st.sidebar.selectbox("Select Option", menu)
+choice = st.sidebar.selectbox("🔒 Select Option", menu)
 
 if choice == "Admin Login":
-    st.subheader("Admin Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    st.subheader("🔐 Admin Login")
+    username = st.text_input("Username", placeholder="Enter admin username")
+    password = st.text_input("Password", type="password", placeholder="Enter admin password")
 
     if st.button("Login"):
         if username == "admin" and password == "password":
-            st.success("Logged in as Admin!")
+            st.success("✅ Logged in as Admin!")
             admin_menu = st.selectbox("Admin Options", ["Add New User", "View Attendance Records", "Generate Reports"])
 
             if admin_menu == "Add New User":
+                st.write("### 📄 Add New User")
                 name = st.text_input("Student Name:")
                 reg_number = st.text_input("Registration Number:")
-                if st.button("Capture Face"):
+                if st.button("Capture Face 📸"):
                     cap = cv2.VideoCapture(0)
                     st.info("Capturing face... Please stay still!")
                     ret, frame = cap.read()
@@ -61,15 +63,17 @@ if choice == "Admin Login":
                             face_data = np.array(face_encodings[0]).tobytes()
                             cursor.execute("INSERT INTO students (name, reg_number, face_encoding) VALUES (?, ?, ?)", (name, reg_number, face_data))
                             conn.commit()
-                            st.success("Student Registered Successfully!")
+                            st.success("🎉 Student Registered Successfully!")
                         else:
-                            st.error("No face detected! Try again.")
+                            st.error("⚠️ No face detected! Try again.")
 
             elif admin_menu == "View Attendance Records":
+                st.write("### 📊 Attendance Records")
                 data = pd.read_sql("SELECT * FROM attendance", conn)
                 st.dataframe(data)
 
             elif admin_menu == "Generate Reports":
+                st.write("### 📈 Generate Reports")
                 report_type = st.selectbox("Select Report Type", ["Daily", "Monthly", "By Student"])
                 if report_type == "Daily":
                     date = st.date_input("Select Date:")
@@ -86,7 +90,7 @@ if choice == "Admin Login":
                         st.dataframe(data)
 
 elif choice == "Attendance":
-    st.subheader("Attendance Marking")
+    st.subheader("📷 Attendance Marking")
     if st.button("Start Camera"):
         cap = cv2.VideoCapture(0)
         st.info("Camera started. Please show your face!")
@@ -102,7 +106,7 @@ elif choice == "Attendance":
                     db_encoding = np.frombuffer(student[3], dtype=np.float64)
                     matches = face_recognition.compare_faces([db_encoding], face_encodings[0])
                     if True in matches:
-                        st.success(f"Attendance Marked for {student[1]} ({student[2]})!")
+                        st.success(f"✅ Attendance Marked for {student[1]} ({student[2]})!")
                         now = datetime.datetime.now()
                         cursor.execute("INSERT INTO attendance (reg_number, name, date, time) VALUES (?, ?, ?, ?)",
                                        (student[2], student[1], now.date(), now.time()))
@@ -110,9 +114,9 @@ elif choice == "Attendance":
                         match_found = True
                         break
                 if not match_found:
-                    st.warning("Unrecognized Face! Please Contact Admin.")
+                    st.warning("❗ Unrecognized Face! Please Contact Admin.")
             else:
-                st.error("No face detected! Try again.")
+                st.error("⚠️ No face detected! Try again.")
 
 
 conn.close()
